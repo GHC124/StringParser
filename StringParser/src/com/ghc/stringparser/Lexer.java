@@ -6,7 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.ghc.stringparser.token.Token;
+import com.ghc.stringparser.token.TokenArgument;
 import com.ghc.stringparser.token.TokenConstant;
+import com.ghc.stringparser.token.TokenFunction;
 import com.ghc.stringparser.token.TokenGroupEnd;
 import com.ghc.stringparser.token.TokenGroupStart;
 import com.ghc.stringparser.token.TokenOperator;
@@ -17,6 +19,8 @@ public class Lexer {
 	private static final int MAX_OPERATOR_LENGTH = 2;
 	 // Maximum length of constant, ex: 20140
 	private static final int MAX_CONSTANT_LENGTH = 5;
+	//Maximum length of function's name, ex: min
+	private static final int MAX_FUNCTION_LENGTH = 5;
 	
 	private Pattern getPattern(String regex) {
 		return Pattern.compile(regex);
@@ -62,6 +66,12 @@ public class Lexer {
 			case Constant:
 				token = getTokenConstant(input, start);
 				break;
+			case Function:
+				token = getTokenFunction(input, start);
+				break;
+			case Argument:
+				token = getTokenArgument(input, start);
+				break;
 			default:
 				break;
 			}
@@ -98,7 +108,7 @@ public class Lexer {
 	private Token getTokenOperator(char[] input, int start) {
 		String subString = getSubString(input, start, MAX_OPERATOR_LENGTH);
 
-		Pattern pattern = getPattern("^[\\+\\*-/]");
+		Pattern pattern = getPattern("^[\\+\\*\\-\\/]");
 		Matcher matcher = pattern.matcher(subString);
 		TokenOperator token = null;
 		if (matcher.find()) {
@@ -128,7 +138,34 @@ public class Lexer {
 		}
 		return token;
 	}
+	
+	private Token getTokenFunction(char[] input, int start) {
+		String subString = getSubString(input, start, MAX_FUNCTION_LENGTH);
 
+		Pattern pattern = getPattern("^(min|max)");
+		Matcher matcher = pattern.matcher(subString);
+		TokenFunction token = null;
+		if (matcher.find()) {
+			String original = matcher.group();
+			token = new TokenFunction();
+			token.setOriginal(original);
+			token.setStart(start);
+			token.setEnd(start + original.length() - 1);
+		}
+		return token;
+	}
+
+	private Token getTokenArgument(char[] input, int start) {
+		TokenArgument token = null;
+		if (input[start] == ',') {
+			token = new TokenArgument();
+			token.setOriginal(input[start]);
+			token.setStart(start);
+			token.setEnd(start);
+		}
+		return token;
+	}
+	
 	private String getSubString(char[] input, int start, int maxLength) {
 		StringBuilder sb = new StringBuilder();
 		int end = start + maxLength;
@@ -153,6 +190,12 @@ public class Lexer {
 				break;
 			case Constant:
 				original = ((TokenConstant)token).getOriginal();
+				break;
+			case Function:
+				original = ((TokenFunction)token).getOriginal();
+				break;
+			case Argument:
+				original = String.valueOf(((TokenArgument)token).getOriginal());
 				break;
 			default:
 				break;

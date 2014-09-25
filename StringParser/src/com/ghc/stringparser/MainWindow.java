@@ -24,13 +24,19 @@ public class MainWindow {
 					
 					Log.enableDebug();
 					
-					String input = "1+20*(140-3)/10+2";
+					String input = "1-min(2,3,max(4,5,6))";
 					
 					Log.d("Input: %s\n\n", input);
 					
 					Lexer lexer = new Lexer();
 					List<Token> tokens = lexer.parse(input);
 					lexer.printTokens(tokens);
+					
+					Log.d("\nParser\n");
+					
+					Parser parser = new Parser();
+					List<Token> parserTokens = parser.rpnParser(tokens);
+					parser.printTokens(parserTokens);
 					
 				} catch (Exception e) {
 					e.printStackTrace();
