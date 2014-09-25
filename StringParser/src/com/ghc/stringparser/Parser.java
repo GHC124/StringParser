@@ -37,7 +37,7 @@ public class Parser {
 					Token token2 = operatorStack.peek();
 					while (token2.getType() == TokenType.Operator) {
 						int precedence2 = getPrecedence((TokenOperator) token2);
-						if (precedence1 > precedence2) {
+						if (precedence1 >= precedence2) {
 							output.add(operatorStack.pop());
 							if (!operatorStack.isEmpty()) {
 								token2 = operatorStack.peek();
@@ -130,13 +130,13 @@ public class Parser {
 		int precedence = 0;
 
 		String original = token.getOriginal();
-		if (original == "*") {
+		if (original.equals("*")) {
 			precedence = 1;
-		} else if (original == "/") {
+		} else if (original.equals("/")) {
 			precedence = 1;
-		} else if (original == "+") {
+		} else if (original.equals("+")) {
 			precedence = 2;
-		} else if (original == "-") {
+		} else if (original.equals("-")) {
 			precedence = 2;
 		}
 
