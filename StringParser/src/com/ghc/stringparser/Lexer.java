@@ -15,13 +15,13 @@ import com.ghc.stringparser.token.TokenOperator;
 import com.ghc.stringparser.token.TokenType;
 
 public class Lexer {
-	 // Maximum length of operator, ex: <=
+	// Maximum length of operator, ex: <=
 	private static final int MAX_OPERATOR_LENGTH = 2;
-	 // Maximum length of constant, ex: 20140
+	// Maximum length of constant, ex: 20140
 	private static final int MAX_CONSTANT_LENGTH = 5;
-	//Maximum length of function's name, ex: min
+	// Maximum length of function's name, ex: min
 	private static final int MAX_FUNCTION_LENGTH = 5;
-	
+
 	private Pattern getPattern(String regex) {
 		return Pattern.compile(regex);
 	}
@@ -78,7 +78,7 @@ public class Lexer {
 			if (token != null) {
 				break;
 			}
-		}		
+		}
 
 		return token;
 	}
@@ -106,51 +106,58 @@ public class Lexer {
 	}
 
 	private Token getTokenOperator(char[] input, int start) {
-		String subString = getSubString(input, start, MAX_OPERATOR_LENGTH);
-
-		Pattern pattern = getPattern("^[\\+\\*\\-\\/]");
-		Matcher matcher = pattern.matcher(subString);
 		TokenOperator token = null;
+		Pattern pattern = getPattern("^[\\+\\*\\-\\/]");
+		Matcher matcher = pattern.matcher(String.valueOf(input[start]));
 		if (matcher.find()) {
-			String original = matcher.group();
-			token = new TokenOperator();
-			token.setOriginal(original);
-			token.setStart(start);
-			token.setEnd(start + original.length() - 1);
+			String subString = getSubString(input, start, MAX_OPERATOR_LENGTH);
+			matcher = pattern.matcher(subString);
+			if (matcher.find()) {
+				String original = matcher.group();
+				token = new TokenOperator();
+				token.setOriginal(original);
+				token.setStart(start);
+				token.setEnd(start + original.length() - 1);
+			}
 		}
 		return token;
 	}
-	
+
 	private Token getTokenConstant(char[] input, int start) {
-		String subString = getSubString(input, start, MAX_CONSTANT_LENGTH);
-
-		Pattern pattern = getPattern("^[0-9]+");
-		Matcher matcher = pattern.matcher(subString);
 		TokenConstant token = null;
+		Pattern pattern = getPattern("^[0-9]+");
+		Matcher matcher = pattern.matcher(String.valueOf(input[start]));
 		if (matcher.find()) {
-			String original = matcher.group();
-			int value = Integer.parseInt(original);
-			token = new TokenConstant();
-			token.setOriginal(original);
-			token.setStart(start);
-			token.setEnd(start + original.length() - 1);
-			token.setValue(value);
+			String subString = getSubString(input, start, MAX_CONSTANT_LENGTH);
+			matcher = pattern.matcher(subString);
+			if (matcher.find()) {
+				String original = matcher.group();
+				int value = Integer.parseInt(original);
+				token = new TokenConstant();
+				token.setOriginal(original);
+				token.setStart(start);
+				token.setEnd(start + original.length() - 1);
+				token.setValue(value);
+			}
 		}
 		return token;
 	}
-	
-	private Token getTokenFunction(char[] input, int start) {
-		String subString = getSubString(input, start, MAX_FUNCTION_LENGTH);
 
-		Pattern pattern = getPattern("^(min|max)");
-		Matcher matcher = pattern.matcher(subString);
+	private Token getTokenFunction(char[] input, int start) {
 		TokenFunction token = null;
+		Pattern pattern = getPattern("^[a-zA-Z]");
+		Matcher matcher = pattern.matcher(String.valueOf(input[start]));
 		if (matcher.find()) {
-			String original = matcher.group();
-			token = new TokenFunction();
-			token.setOriginal(original);
-			token.setStart(start);
-			token.setEnd(start + original.length() - 1);
+			pattern = getPattern("^(min|max)");
+			String subString = getSubString(input, start, MAX_FUNCTION_LENGTH);
+			matcher = pattern.matcher(subString);
+			if (matcher.find()) {
+				String original = matcher.group();
+				token = new TokenFunction();
+				token.setOriginal(original);
+				token.setStart(start);
+				token.setEnd(start + original.length() - 1);
+			}
 		}
 		return token;
 	}
@@ -165,7 +172,7 @@ public class Lexer {
 		}
 		return token;
 	}
-	
+
 	private String getSubString(char[] input, int start, int maxLength) {
 		StringBuilder sb = new StringBuilder();
 		int end = start + maxLength;
@@ -175,34 +182,38 @@ public class Lexer {
 		return sb.toString();
 	}
 
-	public void printTokens(List<Token> tokens) {
+	public void printTokens(List<Token> tokens, StringBuilder sb) {
 		for (Token token : tokens) {
 			String original = "";
-			switch(token.getType()){
+			switch (token.getType()) {
 			case GroupStart:
-				original = String.valueOf(((TokenGroupStart)token).getOriginal());
+				original = String.valueOf(((TokenGroupStart) token)
+						.getOriginal());
 				break;
 			case GroupEnd:
-				original = String.valueOf(((TokenGroupEnd)token).getOriginal());
+				original = String
+						.valueOf(((TokenGroupEnd) token).getOriginal());
 				break;
 			case Operator:
-				original = ((TokenOperator)token).getOriginal();
+				original = ((TokenOperator) token).getOriginal();
 				break;
 			case Constant:
-				original = ((TokenConstant)token).getOriginal();
+				original = ((TokenConstant) token).getOriginal();
 				break;
 			case Function:
-				original = ((TokenFunction)token).getOriginal();
+				original = ((TokenFunction) token).getOriginal();
 				break;
 			case Argument:
-				original = String.valueOf(((TokenArgument)token).getOriginal());
+				original = String
+						.valueOf(((TokenArgument) token).getOriginal());
 				break;
 			default:
 				break;
 			}
-			
-			System.out.printf("Original %s, Type %s, start %d, end %d \n", original,
-					token.getType().name(), token.getStart(), token.getEnd());
+
+			sb.append(String.format(
+					"Original %s, Type %s, start %d, end %d \n", original,
+					token.getType().name(), token.getStart(), token.getEnd()));
 		}
 	}
 }

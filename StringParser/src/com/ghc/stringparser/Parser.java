@@ -105,10 +105,12 @@ public class Parser {
 						}
 					}
 				}
-				Boolean w = wereValues.pop();
-				if (w) {
-					Integer a = argCount.pop();
-					argCount.push(a + 1);
+				if (!wereValues.empty()) {
+					Boolean w = wereValues.pop();
+					if (w) {
+						Integer a = argCount.pop();
+						argCount.push(a + 1);
+					}
 				}
 				wereValues.push(false);
 				break;
@@ -143,7 +145,7 @@ public class Parser {
 		return precedence;
 	}
 
-	public void printTokens(List<Token> tokens) {
+	public void printTokens(List<Token> tokens, StringBuilder sb) {
 		for (Token token : tokens) {
 			String original = "";
 			int argCount = -1;
@@ -174,11 +176,11 @@ public class Parser {
 				break;
 			}
 			if (argCount >= 0) {
-				System.out.printf("Original %s, Type %s, Arg %d\n", original,
-						token.getType().name(), argCount);
+				sb.append(String.format("Original %s, Type %s, Arg %d\n",
+						original, token.getType().name(), argCount));
 			} else {
-				System.out.printf("Original %s, Type %s\n", original, token
-						.getType().name());
+				sb.append(String.format("Original %s, Type %s\n", original,
+						token.getType().name()));
 			}
 		}
 	}
