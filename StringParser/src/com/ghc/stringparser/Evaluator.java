@@ -6,13 +6,14 @@ import java.util.Stack;
 import com.ghc.stringparser.token.Token;
 import com.ghc.stringparser.token.TokenConstant;
 import com.ghc.stringparser.token.TokenFunction;
+import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
 
 public class Evaluator {
-	public int evaluate(List<Token> input) {
-		int result = 0;
-
+	public TokenIdentifier evaluate(List<Token> input) {
 		Stack<Integer> constantStack = new Stack<Integer>();
+		TokenIdentifier tokenIdentifier = null;
+
 		int argCount = 0;
 		int[] values;
 		int value;
@@ -51,16 +52,27 @@ public class Evaluator {
 				value = getFunctionValue(tokenFunction, values);
 				constantStack.push(value);
 				break;
+			case Assignment:
+				if (tokenIdentifier != null) {
+					tokenIdentifier.setValue(constantStack.pop());
+				}
+				break;
+			case Identifier:
+				tokenIdentifier = ((TokenIdentifier) token);
+				break;
 			default:
 				break;
 			}
 		}
 
-		if (!constantStack.isEmpty()) {
-			result = constantStack.pop();
+		if (tokenIdentifier == null) {
+			tokenIdentifier = new TokenIdentifier();
+			if(!constantStack.empty()){
+				tokenIdentifier.setValue(constantStack.pop());
+			}
 		}
 
-		return result;
+		return tokenIdentifier;
 	}
 
 	private int getArgumentCount(TokenOperator token) {

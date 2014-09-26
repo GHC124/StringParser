@@ -7,10 +7,12 @@ import java.util.regex.Pattern;
 
 import com.ghc.stringparser.token.Token;
 import com.ghc.stringparser.token.TokenArgument;
+import com.ghc.stringparser.token.TokenAssignment;
 import com.ghc.stringparser.token.TokenConstant;
 import com.ghc.stringparser.token.TokenFunction;
 import com.ghc.stringparser.token.TokenGroupEnd;
 import com.ghc.stringparser.token.TokenGroupStart;
+import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
 import com.ghc.stringparser.token.TokenType;
 
@@ -21,9 +23,17 @@ public class Lexer {
 	private static final int MAX_CONSTANT_LENGTH = 5;
 	// Maximum length of function's name, ex: min
 	private static final int MAX_FUNCTION_LENGTH = 5;
-
+	// Maximum length of identifier's name, ex: x
+	private static final int MAX_IDENTIFIER_LENGTH = 1;
+	
+	private int identifierCount = 0;
+	
 	private Pattern getPattern(String regex) {
 		return Pattern.compile(regex);
+	}
+	
+	public int getIdentifierCount(){
+		return identifierCount;
 	}
 
 	public List<Token> parse(String input) {
@@ -65,18 +75,29 @@ public class Lexer {
 				break;
 			case Constant:
 				token = getTokenConstant(input, start);
-				break;
-			case Function:
-				token = getTokenFunction(input, start);
-				break;
+				break;			
 			case Argument:
 				token = getTokenArgument(input, start);
+				break;
+			case Assignment:
+				token = getTokenAssignment(input, start);
 				break;
 			default:
 				break;
 			}
 			if (token != null) {
 				break;
+			}
+		}
+		
+		// Check function & identifier
+		if(token == null){
+			token = getTokenFunction(input, start);
+			if(token == null){
+				token = getTokenIdentifier(input, start);
+				if(token != null){
+					identifierCount++;
+				}
 			}
 		}
 
@@ -172,6 +193,36 @@ public class Lexer {
 		}
 		return token;
 	}
+	
+	private Token getTokenIdentifier(char[] input, int start) {
+		TokenIdentifier token = null;
+		Pattern pattern = getPattern("^[a-zA-Z]");
+		Matcher matcher = pattern.matcher(String.valueOf(input[start]));
+		if (matcher.find()) {
+			pattern = getPattern("^[a-zA-Z]+");
+			String subString = getSubString(input, start, MAX_IDENTIFIER_LENGTH);
+			matcher = pattern.matcher(subString);
+			if (matcher.find()) {
+				String original = matcher.group();
+				token = new TokenIdentifier();
+				token.setOriginal(original);
+				token.setStart(start);
+				token.setEnd(start + original.length() - 1);
+			}
+		}
+		return token;
+	}
+	
+	private Token getTokenAssignment(char[] input, int start) {
+		TokenAssignment token = null;
+		if (input[start] == '=') {
+			token = new TokenAssignment();
+			token.setOriginal(input[start]);
+			token.setStart(start);
+			token.setEnd(start);
+		}
+		return token;
+	}
 
 	private String getSubString(char[] input, int start, int maxLength) {
 		StringBuilder sb = new StringBuilder();
@@ -206,6 +257,13 @@ public class Lexer {
 			case Argument:
 				original = String
 						.valueOf(((TokenArgument) token).getOriginal());
+				break;
+			case Identifier:
+				original = ((TokenIdentifier) token).getOriginal();
+				break;
+			case Assignment:
+				original = String
+						.valueOf(((TokenAssignment) token).getOriginal());
 				break;
 			default:
 				break;

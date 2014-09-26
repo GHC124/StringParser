@@ -6,10 +6,12 @@ import java.util.Stack;
 
 import com.ghc.stringparser.token.Token;
 import com.ghc.stringparser.token.TokenArgument;
+import com.ghc.stringparser.token.TokenAssignment;
 import com.ghc.stringparser.token.TokenConstant;
 import com.ghc.stringparser.token.TokenFunction;
 import com.ghc.stringparser.token.TokenGroupEnd;
 import com.ghc.stringparser.token.TokenGroupStart;
+import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
 import com.ghc.stringparser.token.TokenType;
 
@@ -26,20 +28,20 @@ public class Parser {
 			switch (token.getType()) {
 			case Constant:
 				output.add(token);
-				if (!wereValues.isEmpty()) {
+				if (!wereValues.empty()) {
 					wereValues.pop();
 					wereValues.push(true);
 				}
 				break;
 			case Operator:
 				int precedence1 = getPrecedence((TokenOperator) token);
-				if (!operatorStack.isEmpty()) {
+				if (!operatorStack.empty()) {
 					Token token2 = operatorStack.peek();
 					while (token2.getType() == TokenType.Operator) {
 						int precedence2 = getPrecedence((TokenOperator) token2);
 						if (precedence1 >= precedence2) {
 							output.add(operatorStack.pop());
-							if (!operatorStack.isEmpty()) {
+							if (!operatorStack.empty()) {
 								token2 = operatorStack.peek();
 							} else {
 								break;
@@ -55,22 +57,22 @@ public class Parser {
 				operatorStack.push(token);
 				break;
 			case GroupEnd:
-				if (!operatorStack.isEmpty()) {
+				if (!operatorStack.empty()) {
 					token = operatorStack.peek();
 					while (token.getType() != TokenType.GroupStart) {
 						output.add(operatorStack.pop());
-						if (!operatorStack.isEmpty()) {
+						if (!operatorStack.empty()) {
 							token = operatorStack.peek();
 						} else {
 							break;
 						}
 					}
 				}
-				if (!operatorStack.isEmpty()
+				if (!operatorStack.empty()
 						&& operatorStack.peek().getType() == TokenType.GroupStart) {
 					operatorStack.pop();
 				}
-				if (!operatorStack.isEmpty()) {
+				if (!operatorStack.empty()) {
 					token = operatorStack.peek();
 					if (token.getType() == TokenType.Function) {
 						Token f = operatorStack.pop();
@@ -87,18 +89,18 @@ public class Parser {
 			case Function:
 				operatorStack.push(token);
 				argCount.push(0);
-				if (!wereValues.isEmpty()) {
+				if (!wereValues.empty()) {
 					wereValues.pop();
 					wereValues.push(true);
 				}
 				wereValues.push(false);
 				break;
 			case Argument:
-				if (!operatorStack.isEmpty()) {
+				if (!operatorStack.empty()) {
 					token = operatorStack.peek();
 					while (token.getType() != TokenType.GroupStart) {
 						output.add(operatorStack.pop());
-						if (!operatorStack.isEmpty()) {
+						if (!operatorStack.empty()) {
 							token = operatorStack.peek();
 						} else {
 							break;
@@ -114,11 +116,17 @@ public class Parser {
 				}
 				wereValues.push(false);
 				break;
+			case Identifier:
+				output.add(token);
+				break;
+			case Assignment:
+				operatorStack.push(token);
+				break;
 			default:
 				break;
 			}
 		}
-		while (!operatorStack.isEmpty()) {
+		while (!operatorStack.empty()) {
 			output.add(operatorStack.pop());
 		}
 
@@ -171,6 +179,13 @@ public class Parser {
 			case Argument:
 				original = String
 						.valueOf(((TokenArgument) token).getOriginal());
+				break;
+			case Identifier:
+				original = ((TokenIdentifier) token).getOriginal();
+				break;
+			case Assignment:
+				original = String
+						.valueOf(((TokenAssignment) token).getOriginal());
 				break;
 			default:
 				break;
