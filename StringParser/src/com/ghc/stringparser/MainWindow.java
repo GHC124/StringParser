@@ -136,8 +136,9 @@ public class MainWindow {
 		public void actionPerformed(ActionEvent e) {
 			StringBuilder message = new StringBuilder();
 			message.append("Support:\n");
-			message.append("+ functions: min, max \n");
+			message.append("+ functions: min(), max() \n");
 			message.append("+ operators: +, -, *, / \n");
+			message.append("+ negative number: - (-1+2) \n");
 			message.append("+ group: (, ) \n");
 			message.append("+ assigment: one character length (x=1+2) \n");
 			message.append("+ mutil line: \n    x=1+2 \n    y=x+min(x,max(2,3)) \n");

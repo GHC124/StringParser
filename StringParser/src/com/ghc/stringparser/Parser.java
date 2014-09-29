@@ -14,6 +14,7 @@ import com.ghc.stringparser.token.TokenGroupStart;
 import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
 import com.ghc.stringparser.token.TokenType;
+import com.ghc.stringparser.token.TokenUnary;
 
 public class Parser {
 	public List<Token> rpnParser(List<Token> input) {
@@ -50,7 +51,13 @@ public class Parser {
 							break;
 						}
 					}
+					if(token2.getType() == TokenType.Unary){
+						output.add(operatorStack.pop());
+					}
 				}
+				operatorStack.push(token);
+				break;
+			case Unary:
 				operatorStack.push(token);
 				break;
 			case GroupStart:
@@ -186,6 +193,10 @@ public class Parser {
 			case Assignment:
 				original = String
 						.valueOf(((TokenAssignment) token).getOriginal());
+				break;
+			case Unary:
+				original = String
+						.valueOf(((TokenUnary) token).getOriginal());
 				break;
 			default:
 				break;

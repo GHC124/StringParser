@@ -8,6 +8,7 @@ import com.ghc.stringparser.token.TokenConstant;
 import com.ghc.stringparser.token.TokenFunction;
 import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
+import com.ghc.stringparser.token.TokenUnary;
 
 public class Evaluator {
 	public TokenIdentifier evaluate(List<Token> input) {
@@ -29,7 +30,7 @@ public class Evaluator {
 				argCount = getArgumentCount(tokenOperator);
 				values = new int[argCount];
 				for (int j = argCount - 1; j >= 0; j--) {
-					if (!constantStack.isEmpty()) {
+					if (!constantStack.empty()) {
 						values[j] = constantStack.pop();
 					} else {
 						break;
@@ -38,12 +39,20 @@ public class Evaluator {
 				value = getOperatorValue(tokenOperator, values);
 				constantStack.push(value);
 				break;
+			case Unary:
+				values = new int[1];
+				if (!constantStack.empty()) {
+					values[0] = constantStack.pop();
+				}
+				value = getUnaryValue((TokenUnary) token, values);
+				constantStack.push(value);
+				break;
 			case Function:
 				TokenFunction tokenFunction = (TokenFunction) token;
 				argCount = tokenFunction.getArgCount();
 				values = new int[argCount];
 				for (int j = argCount - 1; j >= 0; j--) {
-					if (!constantStack.isEmpty()) {
+					if (!constantStack.empty()) {
 						values[j] = constantStack.pop();
 					} else {
 						break;
@@ -67,7 +76,7 @@ public class Evaluator {
 
 		if (tokenIdentifier == null) {
 			tokenIdentifier = new TokenIdentifier();
-			if(!constantStack.empty()){
+			if (!constantStack.empty()) {
 				tokenIdentifier.setValue(constantStack.pop());
 			}
 		}
@@ -99,12 +108,22 @@ public class Evaluator {
 		if (original.equals("*")) {
 			value = values[0] * values[1];
 		} else if (original.equals("/")) {
-			value = values[0] / values[1];
+			if (values[1] != 0) {
+				value = values[0] / values[1];
+			}
 		} else if (original.equals("+")) {
 			value = values[0] + values[1];
 		} else if (original.equals("-")) {
 			value = values[0] - values[1];
 		}
+
+		return value;
+	}
+
+	private int getUnaryValue(TokenUnary token, int[] values) {
+		int value = 0;
+
+		value = -values[0];
 
 		return value;
 	}

@@ -15,6 +15,7 @@ import com.ghc.stringparser.token.TokenGroupStart;
 import com.ghc.stringparser.token.TokenIdentifier;
 import com.ghc.stringparser.token.TokenOperator;
 import com.ghc.stringparser.token.TokenType;
+import com.ghc.stringparser.token.TokenUnary;
 
 public class Lexer {
 	// Maximum length of operator, ex: <=
@@ -25,14 +26,14 @@ public class Lexer {
 	private static final int MAX_FUNCTION_LENGTH = 5;
 	// Maximum length of identifier's name, ex: x
 	private static final int MAX_IDENTIFIER_LENGTH = 1;
-	
+
 	private int identifierCount = 0;
-	
+
 	private Pattern getPattern(String regex) {
 		return Pattern.compile(regex);
 	}
-	
-	public int getIdentifierCount(){
+
+	public int getIdentifierCount() {
 		return identifierCount;
 	}
 
@@ -46,7 +47,7 @@ public class Lexer {
 		char[] array = getArray(input);
 		int length = array.length;
 		for (int i = 0; i < length; i++) {
-			Token token = getToken(array, i);
+			Token token = getToken(array, i, tokens);
 			if (token != null) {
 				tokens.add(token);
 				i = token.getEnd();
@@ -60,7 +61,7 @@ public class Lexer {
 		return input.toCharArray();
 	}
 
-	private Token getToken(char[] input, int start) {
+	private Token getToken(char[] input, int start, List<Token> tokens) {
 		Token token = null;
 		for (TokenType type : TokenType.values()) {
 			switch (type) {
@@ -70,12 +71,9 @@ public class Lexer {
 			case GroupEnd:
 				token = getTokenGroupEnd(input, start);
 				break;
-			case Operator:
-				token = getTokenOperator(input, start);
-				break;
 			case Constant:
 				token = getTokenConstant(input, start);
-				break;			
+				break;
 			case Argument:
 				token = getTokenArgument(input, start);
 				break;
@@ -89,13 +87,33 @@ public class Lexer {
 				break;
 			}
 		}
-		
+		// Check unary & operator
+		if (token == null) {
+			if (isTokenUnary(input, start)) {
+				// Check previous token
+				if (tokens.isEmpty()) {
+					token = createTokenUnary(start);
+				} else {
+					Token previous = tokens.get(tokens.size() - 1);
+					if (previous.getType() == TokenType.Operator
+							|| previous.getType() == TokenType.GroupStart
+							|| previous.getType() == TokenType.Unary
+							|| previous.getType() == TokenType.Assignment
+							|| previous.getType() == TokenType.Argument) {
+						token = createTokenUnary(start);
+					}
+				}
+			}
+			if (token == null) {
+				token = getTokenOperator(input, start);
+			}
+		}
 		// Check function & identifier
-		if(token == null){
+		if (token == null) {
 			token = getTokenFunction(input, start);
-			if(token == null){
+			if (token == null) {
 				token = getTokenIdentifier(input, start);
-				if(token != null){
+				if (token != null) {
 					identifierCount++;
 				}
 			}
@@ -193,7 +211,7 @@ public class Lexer {
 		}
 		return token;
 	}
-	
+
 	private Token getTokenIdentifier(char[] input, int start) {
 		TokenIdentifier token = null;
 		Pattern pattern = getPattern("^[a-zA-Z]");
@@ -212,7 +230,7 @@ public class Lexer {
 		}
 		return token;
 	}
-	
+
 	private Token getTokenAssignment(char[] input, int start) {
 		TokenAssignment token = null;
 		if (input[start] == '=') {
@@ -221,6 +239,21 @@ public class Lexer {
 			token.setStart(start);
 			token.setEnd(start);
 		}
+		return token;
+	}
+
+	private boolean isTokenUnary(char[] input, int start) {
+		if (input[start] == '-') {
+			return true;
+		}
+		return false;
+	}
+
+	private Token createTokenUnary(int start) {
+		TokenUnary token = new TokenUnary();
+		token.setOriginal('-');
+		token.setStart(start);
+		token.setEnd(start);
 		return token;
 	}
 
@@ -262,8 +295,12 @@ public class Lexer {
 				original = ((TokenIdentifier) token).getOriginal();
 				break;
 			case Assignment:
-				original = String
-						.valueOf(((TokenAssignment) token).getOriginal());
+				original = String.valueOf(((TokenAssignment) token)
+						.getOriginal());
+				break;
+			case Unary:
+				original = String.valueOf(((TokenUnary) token)
+						.getOriginal());
 				break;
 			default:
 				break;
