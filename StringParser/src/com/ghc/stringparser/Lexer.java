@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ghc.stringparser.datatype.FloatingPoint;
 import com.ghc.stringparser.token.Token;
 import com.ghc.stringparser.token.TokenArgument;
 import com.ghc.stringparser.token.TokenAssignment;
@@ -22,6 +23,8 @@ public class Lexer {
 	private static final int MAX_OPERATOR_LENGTH = 2;
 	// Maximum length of constant, ex: 20140
 	private static final int MAX_CONSTANT_LENGTH = 5;
+	// Maximum length of fraction, ex: 20140.524
+	private static final int MAX_FRACTION_LENGTH = 3;
 	// Maximum length of function's name, ex: min
 	private static final int MAX_FUNCTION_LENGTH = 5;
 	// Maximum length of identifier's name, ex: x
@@ -164,19 +167,40 @@ public class Lexer {
 
 	private Token getTokenConstant(char[] input, int start) {
 		TokenConstant token = null;
-		Pattern pattern = getPattern("^[0-9]+");
+		Pattern pattern = getPattern("^[0-9]");
 		Matcher matcher = pattern.matcher(String.valueOf(input[start]));
 		if (matcher.find()) {
-			String subString = getSubString(input, start, MAX_CONSTANT_LENGTH);
+			pattern = getPattern("^[0-9]*\\.?[0-9]+");
+			String subString = getSubString(input, start, MAX_CONSTANT_LENGTH
+					+ 1 + MAX_FRACTION_LENGTH);
 			matcher = pattern.matcher(subString);
 			if (matcher.find()) {
 				String original = matcher.group();
-				int value = Integer.parseInt(original);
 				token = new TokenConstant();
 				token.setOriginal(original);
 				token.setStart(start);
 				token.setEnd(start + original.length() - 1);
-				token.setValue(value);
+				int dot = original.indexOf(".");
+				int value = 0;
+				int fraction = 0;
+				int devide = 1;
+				if (dot == -1) {
+					value = Integer.parseInt(original);
+				} else {
+					value = Integer.parseInt(original.substring(0, dot));
+					if (dot < original.length() - 1) {
+						String sFraction = original.substring(dot + 1);
+						fraction = Integer.parseInt(sFraction);
+						for (int i = 0; i < sFraction.length(); i++) {
+							devide = devide * 10;
+						}
+					}
+				}
+				FloatingPoint floatingPoint = new FloatingPoint();
+				floatingPoint.setValue(value);
+				floatingPoint.setFraction(fraction);
+				floatingPoint.setDevide(devide);
+				token.setValue(floatingPoint);
 			}
 		}
 		return token;
@@ -269,6 +293,9 @@ public class Lexer {
 	public void printTokens(List<Token> tokens, StringBuilder sb) {
 		for (Token token : tokens) {
 			String original = "";
+			int value = 0;
+			int fraction = 0;
+			int devide = 1;
 			switch (token.getType()) {
 			case GroupStart:
 				original = String.valueOf(((TokenGroupStart) token)
@@ -283,6 +310,9 @@ public class Lexer {
 				break;
 			case Constant:
 				original = ((TokenConstant) token).getOriginal();
+				value = ((TokenConstant) token).getValue().getValue();
+				fraction = ((TokenConstant) token).getValue().getFraction();
+				devide = ((TokenConstant) token).getValue().getDevide();
 				break;
 			case Function:
 				original = ((TokenFunction) token).getOriginal();
@@ -299,16 +329,24 @@ public class Lexer {
 						.getOriginal());
 				break;
 			case Unary:
-				original = String.valueOf(((TokenUnary) token)
-						.getOriginal());
+				original = String.valueOf(((TokenUnary) token).getOriginal());
 				break;
 			default:
 				break;
 			}
 
-			sb.append(String.format(
-					"Original %s, Type %s, start %d, end %d \n", original,
-					token.getType().name(), token.getStart(), token.getEnd()));
+			if (token.getType() == TokenType.Constant) {
+				sb.append(String
+						.format("Original %s, Type %s, Value %d, Fraction %d, Devide %d, start %d, end %d \n",
+								original, token.getType().name(), value,
+								fraction, devide, token.getStart(),
+								token.getEnd()));
+			} else {
+				sb.append(String.format(
+						"Original %s, Type %s, start %d, end %d \n", original,
+						token.getType().name(), token.getStart(),
+						token.getEnd()));
+			}
 		}
 	}
 }

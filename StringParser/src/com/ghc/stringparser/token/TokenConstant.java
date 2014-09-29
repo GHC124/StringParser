@@ -1,9 +1,12 @@
 package com.ghc.stringparser.token;
 
+import com.ghc.stringparser.datatype.FloatingPoint;
+
 public class TokenConstant extends Token {
 	private String original;
-	private int value;
-		
+
+	private FloatingPoint value;
+
 	@Override
 	public TokenType getType() {
 		return TokenType.Constant;
@@ -17,11 +20,12 @@ public class TokenConstant extends Token {
 		this.original = orginal;
 	}
 
-	public int getValue() {
+	public FloatingPoint getValue() {
 		return value;
 	}
 
-	public void setValue(int value) {
+	public void setValue(FloatingPoint value) {
 		this.value = value;
-	}		
+	}
+
 }

@@ -139,6 +139,7 @@ public class MainWindow {
 			message.append("+ functions: min(), max() \n");
 			message.append("+ operators: +, -, *, / \n");
 			message.append("+ negative number: - (-1+2) \n");
+			message.append("+ floating point number: m.n (1.2) \n     m < 5 characters \n     n < 3 characters \n");
 			message.append("+ group: (, ) \n");
 			message.append("+ assigment: one character length (x=1+2) \n");
 			message.append("+ mutil line: \n    x=1+2 \n    y=x+min(x,max(2,3)) \n");

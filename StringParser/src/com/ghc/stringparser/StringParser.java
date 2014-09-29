@@ -27,12 +27,16 @@ public class StringParser {
 				for (int i = 0; i < tokens.size(); i++) {
 					if (tokens.get(i).getType() == TokenType.Identifier) {
 						count++;
-						TokenIdentifier item = (TokenIdentifier)tokens.get(i);
-						TokenIdentifier exitIdentifier = identifiers.get(item.getOriginal());
+						TokenIdentifier item = (TokenIdentifier) tokens.get(i);
+						TokenIdentifier exitIdentifier = identifiers.get(item
+								.getOriginal());
 						if (exitIdentifier != null) {
-							
-							output.append(String.format("Replace identifier: %s=%d\n", exitIdentifier.getOriginal(), exitIdentifier.getValue()));
-							
+
+							output.append(String.format(
+									"Replace identifier: %s=%d\n",
+									exitIdentifier.getOriginal(),
+									exitIdentifier.getValue()));
+
 							TokenConstant tokenConstant = new TokenConstant();
 							copyToken(tokenConstant, exitIdentifier);
 							tokens.set(i, tokenConstant);
@@ -55,13 +59,13 @@ public class StringParser {
 			Evaluator evaluator = new Evaluator();
 			TokenIdentifier tokenIdentifier = evaluator.evaluate(parserTokens);
 			if (tokenIdentifier.getOriginal() == null) {
-				output.append(String.format("Result: %d",
-						tokenIdentifier.getValue()));
+				output.append(String.format("Result: %f",
+						evaluator.getFloatNumber(tokenIdentifier.getValue())));
 			} else {
 				identifiers.put(tokenIdentifier.getOriginal(), tokenIdentifier);
-				output.append(String.format("Identifier: %s = %d",
+				output.append(String.format("Identifier: %s = %f",
 						tokenIdentifier.getOriginal(),
-						tokenIdentifier.getValue()));
+						evaluator.getFloatNumber(tokenIdentifier.getValue())));
 			}
 			output.append("\n\n");
 		}
