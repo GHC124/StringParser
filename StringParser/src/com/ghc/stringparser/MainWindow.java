@@ -141,8 +141,9 @@ public class MainWindow {
 			message.append("+ negative number: - (-1+2) \n");
 			message.append("+ floating point number: m.n (1.2) \n     m < 5 characters \n     n < 3 characters \n");
 			message.append("+ group: (, ) \n");
-			message.append("+ assigment: one character length (x=1+2) \n");
-			message.append("+ mutil line: \n    x=1+2 \n    y=x+min(x,max(2,3)) \n");
+			message.append("+ assigment: one character length (x = 1+2) \n");
+			message.append("+ mutil line: \n     x = 1+2 \n     y = x+min(x,max(2,3)) \n");
+			message.append("+ Examples: \n     x = -(-(-(1+2.3)*max(1,2,3)))-min(-0.5,1) \n     y = 1+x \n");			
 			
 			JOptionPane.showMessageDialog(frame, message.toString());
 		}

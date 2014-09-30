@@ -1,5 +1,7 @@
 package com.ghc.stringparser;
 
+import static com.ghc.stringparser.datatype.util.FloatingPointUtil.getFloatNumber;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,9 @@ public class StringParser {
 			output.append("Lexer\n");
 
 			Lexer lexer = new Lexer();
+			Parser parser = new Parser();
+			Evaluator evaluator = new Evaluator();
+			
 			List<Token> tokens = lexer.parse(input);
 			lexer.printTokens(tokens, output);
 
@@ -33,9 +38,9 @@ public class StringParser {
 						if (exitIdentifier != null) {
 
 							output.append(String.format(
-									"Replace identifier: %s=%d\n",
+									"Replace identifier: %s=%f\n",
 									exitIdentifier.getOriginal(),
-									exitIdentifier.getValue()));
+									getFloatNumber(exitIdentifier.getValue())));
 
 							TokenConstant tokenConstant = new TokenConstant();
 							copyToken(tokenConstant, exitIdentifier);
@@ -49,23 +54,21 @@ public class StringParser {
 			}
 
 			output.append("\nParser\n");
-
-			Parser parser = new Parser();
+			
 			List<Token> parserTokens = parser.rpnParser(tokens);
 			parser.printTokens(parserTokens, output);
 
 			output.append("\nEvaluator\n");
 
-			Evaluator evaluator = new Evaluator();
 			TokenIdentifier tokenIdentifier = evaluator.evaluate(parserTokens);
 			if (tokenIdentifier.getOriginal() == null) {
 				output.append(String.format("Result: %f",
-						evaluator.getFloatNumber(tokenIdentifier.getValue())));
+						getFloatNumber(tokenIdentifier.getValue())));
 			} else {
 				identifiers.put(tokenIdentifier.getOriginal(), tokenIdentifier);
 				output.append(String.format("Identifier: %s = %f",
 						tokenIdentifier.getOriginal(),
-						evaluator.getFloatNumber(tokenIdentifier.getValue())));
+						getFloatNumber(tokenIdentifier.getValue())));
 			}
 			output.append("\n\n");
 		}
@@ -73,7 +76,7 @@ public class StringParser {
 
 	private static void copyToken(TokenConstant tokenConstant,
 			TokenIdentifier tokenIdentifier) {
-		tokenConstant.setOriginal(String.valueOf(tokenIdentifier.getValue()));
+		tokenConstant.setOriginal(String.valueOf(getFloatNumber(tokenIdentifier.getValue())));
 		tokenConstant.setStart(tokenIdentifier.getStart());
 		tokenConstant.setEnd(tokenIdentifier.getEnd());
 		tokenConstant.setValue(tokenIdentifier.getValue());

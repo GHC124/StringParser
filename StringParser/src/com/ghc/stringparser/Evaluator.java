@@ -1,5 +1,8 @@
 package com.ghc.stringparser;
 
+import static com.ghc.stringparser.datatype.util.FloatingPointUtil.getFloatNumber;
+import static com.ghc.stringparser.datatype.util.FloatingPointUtil.getFloatingPoint;
+
 import java.util.List;
 import java.util.Stack;
 
@@ -128,59 +131,21 @@ public class Evaluator {
 		return floatingPoint;
 	}
 
-	public float getFloatNumber(FloatingPoint floatingPoint) {
-		float value = 0.0f;
-
-		if (floatingPoint.getFraction() > 0 && floatingPoint.getDevide() > 0) {
-			if (floatingPoint.getValue() < 0) {
-				value = (-(float) floatingPoint.getValue())
-						+ (float) floatingPoint.getFraction()
-						/ (float) floatingPoint.getDevide();
-				value = -value;
-			} else {
-				value = (float) floatingPoint.getValue()
-						+ (float) floatingPoint.getFraction()
-						/ (float) floatingPoint.getDevide();
-			}
-		} else {
-			value = floatingPoint.getValue();
-		}
-
-		return value;
-	}
-
-	public FloatingPoint getFloatingPoint(float fValue) {
-		FloatingPoint floatingPoint = new FloatingPoint();
-
-		String original = String.valueOf(fValue);
-
-		int dot = original.indexOf(".");
-		int value = 0;
-		int fraction = 0;
-		int devide = 1;
-		if (dot == -1) {
-			value = Integer.parseInt(original);
-		} else {
-			value = Integer.parseInt(original.substring(0, dot));
-			if (dot < original.length() - 1) {
-				String sFraction = original.substring(dot + 1);
-				fraction = Integer.parseInt(sFraction);
-				for (int i = 0; i < sFraction.length(); i++) {
-					devide = devide * 10;
-				}
-			}
-		}
-		floatingPoint.setValue(value);
-		floatingPoint.setFraction(fraction);
-		floatingPoint.setDevide(devide);
-
-		return floatingPoint;
-	}
+	
 
 	private FloatingPoint getUnaryValue(TokenUnary token, FloatingPoint[] values) {
 		FloatingPoint value = values[0];
+		
+		if(value == null){
+			return value;
+		}
 
-		value.setValue(-value.getValue());
+		// -0 == 0, so change fraction to negative
+		if(value.getValue() == 0){
+			value.setFraction(-value.getFraction());
+		}else{		
+			value.setValue(-value.getValue());
+		}
 
 		return value;
 	}

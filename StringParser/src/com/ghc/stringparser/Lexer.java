@@ -29,6 +29,8 @@ public class Lexer {
 	private static final int MAX_FUNCTION_LENGTH = 5;
 	// Maximum length of identifier's name, ex: x
 	private static final int MAX_IDENTIFIER_LENGTH = 1;
+	// Floating point device offset
+	public static final int FLOATING_POINT_DEVICE_OFFSET = 10;
 
 	private int identifierCount = 0;
 
@@ -192,7 +194,7 @@ public class Lexer {
 						String sFraction = original.substring(dot + 1);
 						fraction = Integer.parseInt(sFraction);
 						for (int i = 0; i < sFraction.length(); i++) {
-							devide = devide * 10;
+							devide = devide * FLOATING_POINT_DEVICE_OFFSET;
 						}
 					}
 				}

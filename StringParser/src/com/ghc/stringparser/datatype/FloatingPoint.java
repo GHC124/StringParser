@@ -4,6 +4,7 @@ public class FloatingPoint {
 	//
 	// 2.3 => value = 2, fraction = 3, devide = 10 => 2 + 3/10
 	// -2.3 => minus, value = -2, fraction = 3, devide = 10 => -(2 + 3/10)
+	// -0.3 => minus, value = 0, fraction = -3, devide = 10 => 0 - 3/10
 	//
 
 	private int value;
